@@ -1,0 +1,285 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ===========================
+// Users & Roles
+// ===========================
+
+enum Role {
+  CLIENT
+  ADMIN
+  DEVELOPER
+  DESIGNER
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  password      String
+  role          Role      @default(CLIENT)
+  avatar        String?
+  phone         String?
+  company       String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt()
+
+  // Client side
+  projects      Project[] @relation("ClientProjects")
+
+  // Team side - projects they're responsible for
+  responsibleFor Project[] @relation("TeamProjects")
+
+  // Messages
+  sentMessages  Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
+
+  // Notifications
+  notifications Notification[]
+
+  // File uploads
+  uploads       FileAttachment[]
+
+  // Authored updates
+  authoredUpdates Update[] @relation("AuthorUpdates")
+}
+
+// ===========================
+// Projects
+// ===========================
+
+enum ProjectType {
+  SITE
+  SISTEMA
+  APP
+  LANDING_PAGE
+  AUTOMACAO
+  OUTRO
+}
+
+enum ProjectStatus {
+  AGUARDANDO_BRIEFING
+  EM_PLANEJAMENTO
+  EM_DESIGN
+  EM_DESENVOLVIMENTO
+  EM_TESTES
+  EM_REVISAO
+  PRONTO_PARA_ENTREGA
+  ENTREGUE
+  EM_MANUTENCAO
+}
+
+enum Priority {
+  BAIXA
+  MEDIA
+  ALTA
+  URGENTE
+}
+
+model Project {
+  id            String        @id @default(cuid())
+  name          String
+  type          ProjectType
+  description   String?
+  status        ProjectStatus @default(AGUARDANDO_BRIEFING)
+  progress      Int           @default(0)
+  priority      Priority      @default(MEDIA)
+  notes         String?
+  startDate     DateTime      @default(now())
+  estimatedEnd  DateTime?
+  actualEnd     DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt()
+
+  // Relations
+  clientId      String
+  client        User          @relation("ClientProjects", fields: [clientId], references: [id])
+
+  // Team members responsible
+  teamMembers   User[]        @relation("TeamProjects")
+
+  // Stages / Timeline
+  stages        Stage[]
+
+  // Updates / Activity log
+  updates       Update[]
+
+  // Messages
+  messages      Message[]
+
+  // Notifications
+  notifications Notification[]
+
+  // Files
+  files         FileAttachment[]
+
+  // Maintenance windows
+  maintenances  Maintenance[]
+
+  @@index([clientId])
+  @@index([status])
+}
+
+// ===========================
+// Stages / Timeline
+// ===========================
+
+model Stage {
+  id            String    @id @default(cuid())
+  name          String
+  description   String?
+  order         Int
+  status        StageStatus @default(PENDING)
+  completedAt   DateTime?
+  predictedEnd  DateTime?
+  notes         String?
+  createdAt     DateTime  @default(now())
+
+  projectId     String
+  project       Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+}
+
+enum StageStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  BLOCKED
+}
+
+// ===========================
+// Updates / Activity log
+// ===========================
+
+model Update {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  createdAt   DateTime @default(now())
+
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  authorId    String
+  author      User     @relation("AuthorUpdates", fields: [authorId], references: [id])
+
+  @@index([projectId])
+}
+
+// ===========================
+// Messages / Chat
+// ===========================
+
+model Message {
+  id          String   @id @default(cuid())
+  content     String
+  createdAt   DateTime @default(now())
+  isRead      Boolean  @default(false)
+
+  // Sender & receiver
+  senderId    String
+  sender      User     @relation("SentMessages", fields: [senderId], references: [id])
+  receiverId  String
+  receiver    User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+
+  // Project context
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  // Optional file attachment
+  fileId      String?
+  file        FileAttachment? @relation("MessageFile")
+
+  @@index([projectId])
+  @@index([senderId])
+  @@index([receiverId])
+}
+
+// ===========================
+// Notifications
+// ===========================
+
+enum NotificationType {
+  STATUS_CHANGE
+  NEW_MESSAGE
+  MAINTENANCE
+  PROJECT_COMPLETED
+  STAGE_COMPLETED
+  GENERAL
+}
+
+model Notification {
+  id          String            @id @default(cuid())
+  title       String
+  message     String
+  type        NotificationType
+  isRead      Boolean           @default(false)
+  createdAt   DateTime          @default(now())
+
+  userId      String
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  projectId   String?
+  project     Project?          @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([projectId])
+}
+
+// ===========================
+// File Attachments
+// ===========================
+
+model FileAttachment {
+  id          String   @id @default(cuid())
+  fileName    String
+  originalName String
+  mimeType    String
+  size        Int
+  path        String
+  createdAt   DateTime @default(now())
+
+  uploadedById String
+  uploadedBy  User     @relation(fields: [uploadedById], references: [id])
+
+  projectId   String?
+  project     Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  // Optional link to a message
+  message     Message? @relation("MessageFile", fields: [id], references: [id])
+
+  @@index([projectId])
+  @@index([uploadedById])
+}
+
+// ===========================
+// Maintenance Windows
+// ===========================
+
+model Maintenance {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  scheduledStart DateTime
+  scheduledEnd   DateTime
+  status      MaintenanceStatus @default(SCHEDULED)
+  createdAt   DateTime @default(now())
+
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+}
+
+enum MaintenanceStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
