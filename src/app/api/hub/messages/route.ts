@@ -27,7 +27,7 @@ export async function GET(request: Request) {
       },
     });
 
-    const messagesWithMine = messages.map((msg) => ({
+    const messagesWithMine = messages.map((msg: typeof messages[number]) => ({
       ...msg,
       isMine: msg.senderId === userId,
     }));
