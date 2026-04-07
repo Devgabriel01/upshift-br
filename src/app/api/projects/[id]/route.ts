@@ -44,7 +44,7 @@ export async function GET(
     }
 
     // Add isMine flag to messages
-    const messages = project.messages.map((msg) => ({
+    const messages = project.messages.map((msg: Record<string, unknown>) => ({
       ...msg,
       isMine: msg.senderId === userId,
     }));
