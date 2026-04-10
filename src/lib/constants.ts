@@ -8,7 +8,7 @@ export const SITE = {
   email: "contato@upshiftbr.com.br",
   linkedin: "https://linkedin.com/company/upshiftbr",
   instagram: "https://instagram.com/upshiftbr",
-  github: "https://github.com/upshiftbr",
+  github: "https://github.com/devgabriel01v",
 };
 
 export const STATS = [
