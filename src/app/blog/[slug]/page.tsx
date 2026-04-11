@@ -1,3 +1,4 @@
+ 
 import { BLOG_POSTS } from "@/lib/constants";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -19,8 +20,8 @@ export default function BlogPost({ params }: { params: { slug: string } }) {
         </div>
         <div style={{ fontSize: "17px", lineHeight: 1.85, color: "rgba(255,255,255,0.75)" }}>
           <p style={{ marginBottom: "24px" }}>{post.excerpt}</p>
-          <p style={{ marginBottom: "24px" }}>Este artigo aborda em profundidade os principais conceitos e práticas relacionadas ao tema. A UPSHIFT BR aplica essas técnicas em projetos reais para entregar resultados concretos aos clientes.</p>
-          <p style={{ marginBottom: "24px" }}>Se você quer implementar essas soluções no seu negócio, entre em contato com nossa equipe para uma conversa sem compromisso.</p>
+          <p style={{ marginBottom: "24px" }}>Este artigo aborda em profundidade os principais conceitos e práticas relacionadas ao tema.</p>
+          <p style={{ marginBottom: "24px" }}>Se você quer implementar essas soluções no seu negócio, entre em contato com nossa equipe.</p>
         </div>
         <div style={{ marginTop: "56px", background: "rgba(255,107,0,0.08)", border: "1px solid rgba(255,107,0,0.2)", borderRadius: "16px", padding: "32px", textAlign: "center" }}>
           <h3 style={{ fontSize: "22px", fontWeight: 700, marginBottom: "10px" }}>Quer aplicar isso no seu negócio?</h3>
