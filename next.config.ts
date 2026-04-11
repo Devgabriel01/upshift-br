@@ -1,12 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+typescript: {
   reactStrictMode: true,
   images: { formats: ["image/avif", "image/webp"] },
   compress: true,
@@ -15,7 +10,7 @@ const nextConfig: NextConfig = {
     return [{
       source: "/(.*)",
       headers: [
-        { key: "X-Frame-Options",        value: "DENY" },
+        { key: "X-Frame-Options",       value: "DENY" },
         { key: "X-Content-Type-Options", value: "nosniff" },
         { key: "Referrer-Policy",        value: "strict-origin-when-cross-origin" },
       ],

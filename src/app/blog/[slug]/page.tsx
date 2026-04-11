@@ -15,9 +15,7 @@ export default function BlogPost({ params }: { params: { slug: string } }) {
         <p style={{ color: "#FF6B00", fontSize: "11px", letterSpacing: "2px", fontWeight: 700, marginBottom: "16px" }}>{post.category}</p>
         <h1 style={{ fontSize: "clamp(28px,4vw,48px)", fontWeight: 800, lineHeight: 1.15, marginBottom: "20px" }}>{post.title}</h1>
         <div style={{ display: "flex", gap: "16px", fontSize: "13px", color: "rgba(255,255,255,0.35)", marginBottom: "48px", paddingBottom: "32px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-          <span>{post.date}</span>
-          <span>·</span>
-          <span>{post.readTime} de leitura</span>
+          <span>{post.date}</span><span>·</span><span>{post.readTime} de leitura</span>
         </div>
         <div style={{ fontSize: "17px", lineHeight: 1.85, color: "rgba(255,255,255,0.75)" }}>
           <p style={{ marginBottom: "24px" }}>{post.excerpt}</p>
