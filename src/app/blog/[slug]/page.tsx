@@ -1,10 +1,14 @@
- 
 import { BLOG_POSTS } from "@/lib/constants";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-export default function BlogPost({ params }: { params: { slug: string } }) {
-  const post = BLOG_POSTS.find((p) => p.slug === params.slug);
+type Props = {
+  params: Promise<{ slug: string }>;
+};
+
+export default async function BlogPost({ params }: Props) {
+  const { slug } = await params;
+  const post = BLOG_POSTS.find((p) => p.slug === slug);
   if (!post) notFound();
 
   return (
