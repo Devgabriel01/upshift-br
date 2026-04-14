@@ -6,10 +6,6 @@ datasource db {
   provider = "postgresql"
 }
 
-// ===========================
-// Users & Roles
-// ===========================
-
 enum Role {
   CLIENT
   ADMIN
@@ -29,29 +25,14 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt()
 
-  // Client side
   projects      Project[] @relation("ClientProjects")
-
-  // Team side - projects they're responsible for
   responsibleFor Project[] @relation("TeamProjects")
-
-  // Messages
   sentMessages  Message[] @relation("SentMessages")
   receivedMessages Message[] @relation("ReceivedMessages")
-
-  // Notifications
   notifications Notification[]
-
-  // File uploads
   uploads       FileAttachment[]
-
-  // Authored updates
   authoredUpdates Update[] @relation("AuthorUpdates")
 }
-
-// ===========================
-// Projects
-// ===========================
 
 enum ProjectType {
   SITE
@@ -96,41 +77,22 @@ model Project {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt()
 
-  // Relations
   clientId      String
   client        User          @relation("ClientProjects", fields: [clientId], references: [id])
-
-  // Team members responsible
   teamMembers   User[]        @relation("TeamProjects")
-
-  // Stages / Timeline
   stages        Stage[]
-
-  // Updates / Activity log
   updates       Update[]
-
-  // Messages
   messages      Message[]
-
-  // Notifications
   notifications Notification[]
-
-  // Files
   files         FileAttachment[]
-
-  // Maintenance windows
   maintenances  Maintenance[]
 
   @@index([clientId])
   @@index([status])
 }
 
-// ===========================
-// Stages / Timeline
-// ===========================
-
 model Stage {
-  id            String    @id @default(cuid())
+  id            String      @id @default(cuid())
   name          String
   description   String?
   order         Int
@@ -138,10 +100,10 @@ model Stage {
   completedAt   DateTime?
   predictedEnd  DateTime?
   notes         String?
-  createdAt     DateTime  @default(now())
+  createdAt     DateTime    @default(now())
 
   projectId     String
-  project       Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project       Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@index([projectId])
 }
@@ -152,10 +114,6 @@ enum StageStatus {
   COMPLETED
   BLOCKED
 }
-
-// ===========================
-// Updates / Activity log
-// ===========================
 
 model Update {
   id          String   @id @default(cuid())
@@ -172,27 +130,20 @@ model Update {
   @@index([projectId])
 }
 
-// ===========================
-// Messages / Chat
-// ===========================
-
 model Message {
   id          String   @id @default(cuid())
   content     String
   createdAt   DateTime @default(now())
   isRead      Boolean  @default(false)
 
-  // Sender & receiver
   senderId    String
   sender      User     @relation("SentMessages", fields: [senderId], references: [id])
   receiverId  String
   receiver    User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
 
-  // Project context
   projectId   String
   project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
-  // Optional file attachment
   fileId      String?
   file        FileAttachment? @relation("MessageFile")
 
@@ -200,10 +151,6 @@ model Message {
   @@index([senderId])
   @@index([receiverId])
 }
-
-// ===========================
-// Notifications
-// ===========================
 
 enum NotificationType {
   STATUS_CHANGE
@@ -215,64 +162,55 @@ enum NotificationType {
 }
 
 model Notification {
-  id          String            @id @default(cuid())
+  id          String           @id @default(cuid())
   title       String
   message     String
   type        NotificationType
-  isRead      Boolean           @default(false)
-  createdAt   DateTime          @default(now())
+  isRead      Boolean          @default(false)
+  createdAt   DateTime         @default(now())
 
   userId      String
-  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   projectId   String?
-  project     Project?          @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  project     Project?         @relation(fields: [projectId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([projectId])
 }
 
-// ===========================
-// File Attachments
-// ===========================
-
 model FileAttachment {
-  id          String   @id @default(cuid())
-  fileName    String
+  id           String   @id @default(cuid())
+  fileName     String
   originalName String
-  mimeType    String
-  size        Int
-  path        String
-  createdAt   DateTime @default(now())
+  mimeType     String
+  size         Int
+  path         String
+  createdAt    DateTime @default(now())
 
   uploadedById String
-  uploadedBy  User     @relation(fields: [uploadedById], references: [id])
+  uploadedBy   User     @relation(fields: [uploadedById], references: [id])
 
-  projectId   String?
-  project     Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  projectId    String?
+  project      Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
 
-  // Optional link to a message
-  message     Message? @relation("MessageFile", fields: [id], references: [id])
+  message      Message? @relation("MessageFile", fields: [id], references: [id])
 
   @@index([projectId])
   @@index([uploadedById])
 }
 
-// ===========================
-// Maintenance Windows
-// ===========================
-
 model Maintenance {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
+  id             String            @id @default(cuid())
+  title          String
+  description    String?
   scheduledStart DateTime
   scheduledEnd   DateTime
-  status      MaintenanceStatus @default(SCHEDULED)
-  createdAt   DateTime @default(now())
+  status         MaintenanceStatus @default(SCHEDULED)
+  createdAt      DateTime          @default(now())
 
-  projectId   String
-  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId      String
+  project        Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@index([projectId])
 }
@@ -282,4 +220,25 @@ enum MaintenanceStatus {
   IN_PROGRESS
   COMPLETED
   CANCELLED
+}
+
+enum BlogStatus {
+  DRAFT
+  PUBLISHED
+}
+
+model BlogPost {
+  id        String     @id @default(cuid())
+  title     String
+  slug      String     @unique
+  excerpt   String
+  content   String
+  category  String
+  readTime  String     @default("5 min")
+  status    BlogStatus @default(DRAFT)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt()
+
+  @@index([slug])
+  @@index([status])
 }
